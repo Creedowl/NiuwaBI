@@ -41,18 +41,25 @@ func AutoWrap(handler interface{}) gin.HandlerFunc {
 		}
 
 		results := value.Call(params)
-
 		var resp gin.H
-		if results[1].IsNil() {
+		var data interface{}
+		errIndex := outsLen - 1
+
+		if results[errIndex].IsNil() {
+			if errIndex >= 1 {
+				data = results[0].Interface()
+			} else {
+				data = nil
+			}
 			resp = gin.H{
 				"code":    200,
 				"message": "success",
-				"data":    results[0].Interface(),
+				"data":    data,
 			}
 		} else {
 			resp = gin.H{
 				"code":    400,
-				"message": results[1].Interface().(error).Error(),
+				"message": results[errIndex].Interface().(error).Error(),
 				"data":    nil,
 			}
 		}
