@@ -8,6 +8,7 @@ import (
 )
 
 func InitLogger() {
+	logrus.Infoln("init logger")
 	var logLevel = logrus.InfoLevel
 	if Cfg.Debug {
 		logLevel = logrus.DebugLevel

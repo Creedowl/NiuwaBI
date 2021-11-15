@@ -11,6 +11,7 @@ import (
 var DB *gorm.DB
 
 func InitDB() {
+	logrus.Infoln("init db")
 	dbCfg := utils.Cfg.Database
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		dbCfg.Username, dbCfg.Password, dbCfg.Host, dbCfg.Port, dbCfg.DefaultDB)

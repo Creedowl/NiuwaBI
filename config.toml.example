@@ -8,3 +8,8 @@ port = 3306
 username = "root"
 password = "password"
 default_db = "niuwa"
+
+[auth]
+jwt_key = "CHANGE_ME"
+timeout = 3600
+max_refresh = 7200

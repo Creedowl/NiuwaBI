@@ -13,11 +13,18 @@ type dbConfig struct {
 	DefaultDB string `mapstructure:"default_db"`
 }
 
+type authConfig struct {
+	JwtKey     string `mapstructure:"jwt_key"`
+	Timeout    int    `mapstructure:"timeout"`
+	MaxRefresh int    `mapstructure:"max_refresh"`
+}
+
 type Config struct {
-	Debug    bool     `mapstructure:"debug"`
-	Host     string   `mapstructure:"host"`
-	Port     int      `mapstructure:"port"`
-	Database dbConfig `mapstructure:"database"`
+	Debug    bool       `mapstructure:"debug"`
+	Host     string     `mapstructure:"host"`
+	Port     int        `mapstructure:"port"`
+	Database dbConfig   `mapstructure:"database"`
+	Auth     authConfig `mapstructure:"auth"`
 }
 
 var Cfg = Config{
@@ -31,9 +38,15 @@ var Cfg = Config{
 		Password:  "password",
 		DefaultDB: "niuwaa",
 	},
+	Auth: authConfig{
+		JwtKey:     "CHANGE_ME",
+		Timeout:    60 * 60,
+		MaxRefresh: 60 * 60 * 2,
+	},
 }
 
 func InitConfig() {
+	logrus.Infoln("init config")
 	viper.SetConfigName("config")
 	viper.SetConfigType("toml")
 	viper.AddConfigPath(".")
@@ -45,5 +58,9 @@ func InitConfig() {
 	err = viper.Unmarshal(&Cfg)
 	if err != nil {
 		logrus.Fatalf("failed to unmarshal config file: %+v\n", err)
+	}
+	if Cfg.Debug {
+		logrus.Debugln("config:")
+		viper.Debug()
 	}
 }

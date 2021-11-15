@@ -14,7 +14,7 @@ func init() {
 }
 
 func main() {
-	logrus.Infoln("starting")
+	logrus.Infoln("start loading app")
 	app := InitApp()
 
 	app.Run(fmt.Sprintf("%s:%d", utils.Cfg.Host, utils.Cfg.Port))
