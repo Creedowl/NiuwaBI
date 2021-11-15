@@ -14,12 +14,18 @@ type Pong struct {
 	Response string `json:"response"`
 }
 
-func Ping(c *gin.Context, param PingResp) (*Pong, error) {
+func Ping(_ *gin.Context, param PingResp) (*Pong, error) {
 	return &Pong{
 		Response: fmt.Sprintf("hello, %s", param.Name),
 	}, nil
 }
 
 func Test(c *gin.Context) (*Pong, error) {
-	return nil, errors.New("error test")
+	u := GetCurrentUser(c)
+	if u == nil || !u.IsAdmin() {
+		return nil, errors.New("you are not admin")
+	}
+	return &Pong{
+		Response: "hello, admin",
+	}, nil
 }
