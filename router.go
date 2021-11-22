@@ -5,6 +5,7 @@ import (
 	"github.com/Creedowl/NiuwaBI/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"io/ioutil"
 )
 
 func InitApp() *gin.Engine {
@@ -13,8 +14,10 @@ func InitApp() *gin.Engine {
 	if err != nil {
 		logrus.Fatalf("failed to init auth: %v", err)
 	}
+	gin.DefaultWriter = ioutil.Discard
 	r := gin.Default()
-
+	r.Use(utils.CustomLogger())
+	gin.ForceConsoleColor()
 	api := r.Group("/api")
 
 	api.GET("/ping", utils.AutoWrap(handlers.Ping))
