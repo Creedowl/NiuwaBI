@@ -27,6 +27,24 @@ func InitApp() *gin.Engine {
 	api.Use(authMiddleware.MiddlewareFunc())
 	{
 		api.POST("/test", utils.AutoWrap(handlers.Test))
+
+		workspace := api.Group("/workspace")
+		{
+			workspace.POST("/get", utils.AutoWrap(handlers.GetWorkspace))
+			workspace.POST("/get_all", utils.AutoWrap(handlers.GetAllWorkspaces))
+			workspace.POST("/create", utils.AutoWrap(handlers.CreateWorkspace))
+			workspace.POST("/update", utils.AutoWrap(handlers.UpdateWorkspace))
+			workspace.POST("/test_conn", utils.AutoWrap(handlers.TestConn))
+		}
+
+		report := api.Group("/report")
+		{
+			report.POST("/get", utils.AutoWrap(handlers.GetReport))
+			report.POST("/get_all", utils.AutoWrap(handlers.GetAllReports))
+			report.POST("/create", utils.AutoWrap(handlers.CreateReport))
+			report.POST("/update", utils.AutoWrap(handlers.UpdateReport))
+			report.POST("/execute", utils.AutoWrap(handlers.ExecuteReport))
+		}
 	}
 
 	return r
