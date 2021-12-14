@@ -53,8 +53,8 @@ func (w *Workspace) Update() (*Workspace, error) {
 func GetAllWorkspaces(pagination *Pagination) (*PaginationResp, error) {
 	var workspaces []Workspace
 	var count int64
-	db := database.GetDB().Find(&workspaces).
-		Limit(pagination.PageSize).Offset((pagination.PageNum - 1) * pagination.PageSize)
+	db := database.GetDB().Model(&Workspace{})
+	pagination.Apply(db).Find(&workspaces)
 	err := db.Error
 	if err != nil {
 		return nil, err
@@ -83,4 +83,8 @@ func GetWorkspaceByID(id uint) (*Workspace, error) {
 		return nil, err
 	}
 	return &workspace, nil
+}
+
+func RemoveWorkspace(id uint) error {
+	return database.GetDB().Delete(&Workspace{}, id).Error
 }

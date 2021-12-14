@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/Creedowl/NiuwaBI/database"
 	"github.com/Creedowl/NiuwaBI/database/models"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -26,19 +27,35 @@ func UpdateWorkspace(_ *gin.Context, workspace models.Workspace) (*models.Worksp
 	return workspace.Update()
 }
 
-type TestConnResp struct {
+func RemoveWorkspace(_ *gin.Context, param WorkspaceIDParam) (*DumbResp, error) {
+	return &DumbResp{OK: true}, models.RemoveWorkspace(param.ID)
+}
+
+type TestConnParam struct {
+	WorkspaceIDParam
+	database.DBConfig
+}
+
+type DumbResp struct {
 	OK bool `json:"ok"`
 }
 
-func TestConn(_ *gin.Context, param WorkspaceIDParam) (*TestConnResp, error) {
-	workspace, err := models.GetWorkspaceByID(param.ID)
+func TestConn(_ *gin.Context, param TestConnParam) (*DumbResp, error) {
+	var dbConfig database.DBConfig
+	if param.WorkspaceIDParam.ID != 0 {
+		workspace, err := models.GetWorkspaceByID(param.ID)
+		if err != nil {
+			return nil, err
+		}
+		logrus.Infof("db config: %+v", workspace.Config.DB)
+		dbConfig = workspace.Config.DB
+	} else {
+
+		dbConfig = param.DBConfig
+	}
+	_, err := dbConfig.TestConn()
 	if err != nil {
 		return nil, err
 	}
-	logrus.Infof("db config: %+v", workspace.Config.DB)
-	_, err = workspace.Config.DB.TestConn()
-	if err != nil {
-		return nil, err
-	}
-	return &TestConnResp{OK: true}, nil
+	return &DumbResp{OK: true}, nil
 }

@@ -34,6 +34,7 @@ func InitApp() *gin.Engine {
 			workspace.POST("/get_all", utils.AutoWrap(handlers.GetAllWorkspaces))
 			workspace.POST("/create", utils.AutoWrap(handlers.CreateWorkspace))
 			workspace.POST("/update", utils.AutoWrap(handlers.UpdateWorkspace))
+			workspace.POST("/remove", utils.AutoWrap(handlers.RemoveWorkspace))
 			workspace.POST("/test_conn", utils.AutoWrap(handlers.TestConn))
 		}
 
