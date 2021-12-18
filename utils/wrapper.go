@@ -25,7 +25,13 @@ func AutoWrap(handler interface{}) gin.HandlerFunc {
 			param := reflect.New(value.Type().In(1)).Interface()
 			err := c.ShouldBind(param)
 			if err != nil {
-				logrus.Fatalf("failed to bind param: %+v\n", err)
+				logrus.Errorf("failed to bind param: %+v\n", err)
+				c.JSON(http.StatusOK, gin.H{
+					"code":    400,
+					"message": "failed to bind param",
+					"data":    nil,
+				})
+				return
 			}
 			marshaled, _ := jsoniter.Marshal(param)
 			req = string(marshaled)
