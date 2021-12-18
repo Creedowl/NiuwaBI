@@ -112,10 +112,14 @@ func (r *Report) Execute() ([]ChartData, error) {
 	return results, nil
 }
 
-func GetAllReports(pagination *Pagination) (*PaginationResp, error) {
+func GetAllReports(pagination *Pagination, workspaceID uint) (*PaginationResp, error) {
 	var reports []Report
 	var count int64
-	db := database.GetDB().Find(&reports).
+	db := database.GetDB().Model(&Report{})
+	if workspaceID != 0 {
+		db.Where("workspace_id = ?", workspaceID)
+	}
+	db.Find(&reports).
 		Limit(pagination.PageSize).Offset((pagination.PageNum - 1) * pagination.PageSize)
 	err := db.Error
 	if err != nil {

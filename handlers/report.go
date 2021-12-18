@@ -13,8 +13,13 @@ func CreateReport(_ *gin.Context, report models.Report) (*models.Report, error) 
 	return report.Save()
 }
 
-func GetAllReports(_ *gin.Context, pagination models.Pagination) (*models.PaginationResp, error) {
-	return models.GetAllReports(&pagination)
+type GetAllReportsParam struct {
+	models.Pagination
+	WorkspaceID uint `json:"workspace_id"`
+}
+
+func GetAllReports(_ *gin.Context, param GetAllReportsParam) (*models.PaginationResp, error) {
+	return models.GetAllReports(&param.Pagination, param.WorkspaceID)
 }
 
 func GetReport(_ *gin.Context, param ReportIDParam) (*models.Report, error) {

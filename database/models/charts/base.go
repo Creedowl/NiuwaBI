@@ -14,11 +14,17 @@ type Pos struct {
 	I string `json:"i"`
 }
 
+type Kv struct {
+	Key   string `json:"key"`
+	Label string `json:"label"`
+}
+
 type ChartBase struct {
 	Type string `json:"type"`
 	Sql  string `json:"sql"`
 	Name string `json:"name"`
 	Pos  Pos    `json:"pos"`
+	Kv   []Kv   `json:"kv"`
 }
 
 type Chart interface {
