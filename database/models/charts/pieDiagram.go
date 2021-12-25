@@ -1,9 +1,24 @@
 package charts
 
-import "gorm.io/gorm"
+import (
+	"github.com/Creedowl/NiuwaBI/dmf"
+	"gorm.io/gorm"
+)
 
 type PieDiagram struct {
 	ChartBase
+}
+
+func (t *PieDiagram) ExecuteDmf(db *gorm.DB, dmf *dmf.DMF) (interface{}, error) {
+	return dmf.Execute(db, t.Fields, t.Filters)
+}
+
+func (t *PieDiagram) UpdateKv(dmf *dmf.DMF) error {
+	panic("implement me")
+}
+
+func (t *PieDiagram) GetChartBase() *ChartBase {
+	return &t.ChartBase
 }
 
 func (t *PieDiagram) Execute(db *gorm.DB) (interface{}, error) {
