@@ -57,6 +57,20 @@ func (r *ReportConfig) UnmarshalJSON(data []byte) error {
 				return err
 			}
 			r.Charts = append(r.Charts, &dt)
+		case charts.DatatableLineDiagram:
+			var dt charts.LineDiagram
+			err = jsoniter.Unmarshal(ct, &dt)
+			if err != nil {
+				return err
+			}
+			r.Charts = append(r.Charts, &dt)
+		case charts.DatatablePieDiagram:
+			var dt charts.PieDiagram
+			err = jsoniter.Unmarshal(ct, &dt)
+			if err != nil {
+				return err
+			}
+			r.Charts = append(r.Charts, &dt)
 		}
 	}
 	return nil
@@ -100,13 +114,13 @@ func (r *Report) Execute() ([]ChartData, error) {
 		return nil, err
 	}
 	for _, c := range r.Config.Charts {
-		res, err := c.Execute(db)
+		res, err := c.Execute(db) //Generate chart data
 		if err != nil {
 			return nil, err
 		}
 		results = append(results, ChartData{
 			Chart: c,
-			Data:  res,
+			Data:  res, //Generate by Execute
 		})
 	}
 	return results, nil

@@ -3,7 +3,9 @@ package charts
 import "gorm.io/gorm"
 
 const (
-	DataTable_ = "table"
+	DataTable_           = "table"
+	DatatableLineDiagram = "line"
+	DatatablePieDiagram  = "pie"
 )
 
 type Pos struct {
