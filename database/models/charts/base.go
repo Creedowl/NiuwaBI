@@ -1,6 +1,10 @@
 package charts
 
-import "gorm.io/gorm"
+import (
+	"fmt"
+	"github.com/Creedowl/NiuwaBI/dmf"
+	"gorm.io/gorm"
+)
 
 const (
 	DataTable_           = "table"
@@ -22,14 +26,38 @@ type Kv struct {
 }
 
 type ChartBase struct {
-	Type string `json:"type"`
-	Sql  string `json:"sql"`
-	Name string `json:"name"`
-	Pos  Pos    `json:"pos"`
-	Kv   []Kv   `json:"kv"`
+	Type    string       `json:"type"`
+	Sql     string       `json:"sql"`
+	Name    string       `json:"name"`
+	Pos     Pos          `json:"pos"`
+	Kv      []Kv         `json:"kv"`
+	Fields  []string     `json:"fields"`
+	Filters []dmf.Filter `json:"filters"`
 }
 
 type Chart interface {
-	Execute(db *gorm.DB) (interface{}, error)
+	Execute(*gorm.DB) (interface{}, error)
+	ExecuteDmf(*gorm.DB, *dmf.DMF) (interface{}, error)
 	GetType() string
+	UpdateKv(dmf *dmf.DMF) error
+	GetChartBase() *ChartBase
+}
+
+func (c *ChartBase) Check(dmf *dmf.DMF) error {
+	for i, filter := range c.Filters {
+		dimension := dmf.GetDimensionByName(filter.Field)
+		if dimension != nil {
+			c.Filters[i].Dim = dimension
+			continue
+		}
+
+		metric := dmf.GetMetricByName(filter.Field)
+		if metric != nil {
+			c.Filters[i].Met = metric
+			continue
+		}
+
+		return fmt.Errorf("unknow dimension or metric %s or field is not set", filter.Field)
+	}
+	return nil
 }

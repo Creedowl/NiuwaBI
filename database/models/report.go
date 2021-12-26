@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Creedowl/NiuwaBI/database"
 	"github.com/Creedowl/NiuwaBI/database/models/charts"
+	"github.com/Creedowl/NiuwaBI/dmf"
 	jsoniter "github.com/json-iterator/go"
 	"gorm.io/gorm/clause"
 )
@@ -25,6 +26,7 @@ type Report struct {
 
 type ReportConfig struct {
 	Charts []charts.Chart `json:"charts"`
+	Dmf    dmf.DMF        `json:"dmf"`
 }
 
 type ChartData struct {
@@ -35,6 +37,7 @@ type ChartData struct {
 func (r *ReportConfig) UnmarshalJSON(data []byte) error {
 	c := struct {
 		Charts []jsoniter.RawMessage `json:"charts"`
+		Dmf    dmf.DMF               `json:"dmf"`
 	}{}
 	t := struct {
 		Type string `json:"type"`
@@ -43,6 +46,7 @@ func (r *ReportConfig) UnmarshalJSON(data []byte) error {
 	if err != nil {
 		return err
 	}
+	r.Dmf = c.Dmf
 
 	for _, ct := range c.Charts {
 		err = jsoniter.Unmarshal(ct, &t)
@@ -71,6 +75,23 @@ func (r *ReportConfig) UnmarshalJSON(data []byte) error {
 				return err
 			}
 			r.Charts = append(r.Charts, &dt)
+		default:
+			return fmt.Errorf("unkown chart type %s", t.Type)
+		}
+	}
+	return nil
+}
+
+func (r *Report) Check() error {
+	// check dimension and metrics
+	err := r.Config.Dmf.Check()
+	if err != nil {
+		return err
+	}
+	for _, chart := range r.Config.Charts {
+		err = chart.GetChartBase().Check(&r.Config.Dmf)
+		if err != nil {
+			return err
 		}
 	}
 	return nil
@@ -88,6 +109,20 @@ func (r *Report) Save() (*Report, error) {
 		return nil, fmt.Errorf("workspace %d not found", r.WorkspaceID)
 	}
 
+	err = r.Check()
+	if err != nil {
+		return nil, err
+	}
+
+	// update kv
+	if r.Type == DMFReport {
+		for _, chart := range r.Config.Charts {
+			err = chart.UpdateKv(&r.Config.Dmf)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
 	err = database.GetDB().Clauses(clause.OnConflict{
 		UpdateAll: true,
 	}).Create(r).Error
@@ -98,6 +133,19 @@ func (r *Report) Update() (*Report, error) {
 	_, err := GetReportByID(r.ID)
 	if err != nil {
 		return nil, err
+	}
+	err = r.Check()
+	if err != nil {
+		return nil, err
+	}
+	// update kv
+	if r.Type == DMFReport {
+		for _, chart := range r.Config.Charts {
+			err = chart.UpdateKv(&r.Config.Dmf)
+			if err != nil {
+				return nil, err
+			}
+		}
 	}
 	return r.Save()
 }
@@ -113,17 +161,37 @@ func (r *Report) Execute() ([]ChartData, error) {
 	if err != nil {
 		return nil, err
 	}
-	for _, c := range r.Config.Charts {
-		res, err := c.Execute(db) //Generate chart data
-		if err != nil {
-			return nil, err
-		}
-		results = append(results, ChartData{
-			Chart: c,
-			Data:  res, //Generate by Execute
-		})
+	err = r.Check()
+	if err != nil {
+		return nil, err
 	}
-	return results, nil
+
+	if r.Type == SqlReport {
+		for _, chart := range r.Config.Charts {
+			res, err := chart.Execute(db)
+			if err != nil {
+				return nil, err
+			}
+			results = append(results, ChartData{
+				Chart: chart,
+				Data:  res,
+			})
+		}
+		return results, nil
+	} else if r.Type == DMFReport {
+		for _, chart := range r.Config.Charts {
+			res, err := chart.ExecuteDmf(db, &r.Config.Dmf)
+			if err != nil {
+				return nil, err
+			}
+			results = append(results, ChartData{
+				Chart: chart,
+				Data:  res,
+			})
+		}
+		return results, nil
+	}
+	return nil, fmt.Errorf("unknow report type %s", r.Type)
 }
 
 func GetAllReports(pagination *Pagination, workspaceID uint) (*PaginationResp, error) {

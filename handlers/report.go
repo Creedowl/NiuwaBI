@@ -26,8 +26,8 @@ func GetReport(_ *gin.Context, param ReportIDParam) (*models.Report, error) {
 	return models.GetReportByID(param.ID)
 }
 
-func UpdateReport(_ *gin.Context, workspace models.Report) (*models.Report, error) {
-	return workspace.Update()
+func UpdateReport(_ *gin.Context, report models.Report) (*models.Report, error) {
+	return report.Update()
 }
 
 func ExecuteReport(_ *gin.Context, param ReportIDParam) (interface{}, error) {

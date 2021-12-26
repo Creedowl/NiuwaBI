@@ -89,5 +89,5 @@ func GetCachedDB(key uint, c *DBConfig) (*gorm.DB, error) {
 		}
 		Pool.Add(key, db)
 	}
-	return db.(*gorm.DB), nil
+	return db.(*gorm.DB).Session(&gorm.Session{}).Debug(), nil
 }

@@ -2,6 +2,7 @@ package charts
 
 import (
 	"errors"
+	"github.com/Creedowl/NiuwaBI/dmf"
 	"gorm.io/gorm"
 )
 
@@ -10,9 +11,21 @@ type LineDiagram struct {
 	X            string    `json:"x"`
 	Y            []string  `json:"y"`
 	XAxisType    string    `json:"xAxisType"`
-	YDataType    string    `json:"yDataType""`
+	YDataType    string    `json:"yDataType"`
 	Datatype     []string  `json:"datatype"`
 	YExtraOption []yOption `json:"yExtraOption"`
+}
+
+func (t *LineDiagram) ExecuteDmf(db *gorm.DB, dmf *dmf.DMF) (interface{}, error) {
+	return dmf.Execute(db, t.Fields, t.Filters)
+}
+
+func (t *LineDiagram) UpdateKv(dmf *dmf.DMF) error {
+	panic("implement me")
+}
+
+func (t *LineDiagram) GetChartBase() *ChartBase {
+	return &t.ChartBase
 }
 
 type yOption struct {
