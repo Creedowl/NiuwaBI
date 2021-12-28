@@ -100,3 +100,7 @@ func (t *LineDiagram) Execute(db *gorm.DB) (interface{}, error) {
 func (t *LineDiagram) GetType() string {
 	return DatatableLineDiagram
 }
+
+func (t *LineDiagram) GetChartType() string {
+	return t.ChartType
+}

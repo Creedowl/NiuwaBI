@@ -27,6 +27,10 @@ func (t *DataTable) GetType() string {
 	return DataTable_
 }
 
+func (t *DataTable) GetChartType() string {
+	return t.ChartType
+}
+
 func (t *DataTable) UpdateKv(dmf *dmf.DMF) error {
 	t.Kv = nil
 	for _, field := range t.Fields {

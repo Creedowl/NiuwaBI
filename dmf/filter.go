@@ -6,20 +6,16 @@ import (
 	"reflect"
 )
 
-var OpMap map[string]string
-
-func init() {
-	OpMap = map[string]string{
-		">":           ">",
-		">=":          ">=",
-		"=":           "=",
-		"<":           "<",
-		"<=":          "<=",
-		"in":          "in",
-		"not in":      "not in",
-		"is null":     "is null",
-		"is not null": "is not null",
-	}
+var OpMap = map[string]string{
+	">":           ">",
+	">=":          ">=",
+	"=":           "=",
+	"<":           "<",
+	"<=":          "<=",
+	"in":          "in",
+	"not in":      "not in",
+	"is null":     "is null",
+	"is not null": "is not null",
 }
 
 type Filter struct {
