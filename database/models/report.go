@@ -9,16 +9,10 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-const (
-	SqlReport = "sql"
-	DMFReport = "dmf"
-)
-
 type Report struct {
 	BaseModel
 	WorkspaceID uint         `json:"workspace_id"`
 	Name        string       `json:"name"`
-	Type        string       `json:"type"`
 	Owner       uint         `json:"owner"`
 	ConfigStr   string       `json:"-" gorm:"column:config"`
 	Config      ReportConfig `json:"config" gorm:"-"`
@@ -83,11 +77,13 @@ func (r *ReportConfig) UnmarshalJSON(data []byte) error {
 }
 
 func (r *Report) Check() error {
-	// check dimension and metrics
+	// check dimensions and metrics
 	err := r.Config.Dmf.Check()
 	if err != nil {
 		return err
 	}
+
+	// check filters
 	for _, chart := range r.Config.Charts {
 		err = chart.GetChartBase().Check(&r.Config.Dmf)
 		if err != nil {
@@ -115,8 +111,8 @@ func (r *Report) Save() (*Report, error) {
 	}
 
 	// update kv
-	if r.Type == DMFReport {
-		for _, chart := range r.Config.Charts {
+	for _, chart := range r.Config.Charts {
+		if chart.GetChartType() == charts.DMFChart {
 			err = chart.UpdateKv(&r.Config.Dmf)
 			if err != nil {
 				return nil, err
@@ -138,9 +134,10 @@ func (r *Report) Update() (*Report, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	// update kv
-	if r.Type == DMFReport {
-		for _, chart := range r.Config.Charts {
+	for _, chart := range r.Config.Charts {
+		if chart.GetChartType() == charts.DMFChart {
 			err = chart.UpdateKv(&r.Config.Dmf)
 			if err != nil {
 				return nil, err
@@ -166,32 +163,27 @@ func (r *Report) Execute() ([]ChartData, error) {
 		return nil, err
 	}
 
-	if r.Type == SqlReport {
-		for _, chart := range r.Config.Charts {
-			res, err := chart.Execute(db)
-			if err != nil {
-				return nil, err
-			}
-			results = append(results, ChartData{
-				Chart: chart,
-				Data:  res,
-			})
+	for _, chart := range r.Config.Charts {
+		var res interface{}
+		var err error
+
+		switch chart.GetChartType() {
+		case charts.SqlChart:
+			res, err = chart.Execute(db)
+		case charts.DMFChart:
+			res, err = chart.ExecuteDmf(db, &r.Config.Dmf)
+		default:
+			return nil, fmt.Errorf("unknow chart type %s", chart.GetChartType())
 		}
-		return results, nil
-	} else if r.Type == DMFReport {
-		for _, chart := range r.Config.Charts {
-			res, err := chart.ExecuteDmf(db, &r.Config.Dmf)
-			if err != nil {
-				return nil, err
-			}
-			results = append(results, ChartData{
-				Chart: chart,
-				Data:  res,
-			})
+		if err != nil {
+			return nil, err
 		}
-		return results, nil
+		results = append(results, ChartData{
+			Chart: chart,
+			Data:  res,
+		})
 	}
-	return nil, fmt.Errorf("unknow report type %s", r.Type)
+	return results, nil
 }
 
 func GetAllReports(pagination *Pagination, workspaceID uint) (*PaginationResp, error) {

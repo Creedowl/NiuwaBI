@@ -12,6 +12,11 @@ const (
 	DatatablePieDiagram  = "pie"
 )
 
+const (
+	SqlChart = "sql"
+	DMFChart = "dmf"
+)
+
 type Pos struct {
 	X int    `json:"x"`
 	Y int    `json:"y"`
@@ -26,19 +31,21 @@ type Kv struct {
 }
 
 type ChartBase struct {
-	Type    string       `json:"type"`
-	Sql     string       `json:"sql"`
-	Name    string       `json:"name"`
-	Pos     Pos          `json:"pos"`
-	Kv      []Kv         `json:"kv"`
-	Fields  []string     `json:"fields"`
-	Filters []dmf.Filter `json:"filters"`
+	Type      string       `json:"type"`
+	ChartType string       `json:"chart_type"`
+	Sql       string       `json:"sql"`
+	Name      string       `json:"name"`
+	Pos       Pos          `json:"pos"`
+	Kv        []Kv         `json:"kv"`
+	Fields    []string     `json:"fields"`
+	Filters   []dmf.Filter `json:"filters"`
 }
 
 type Chart interface {
 	Execute(*gorm.DB) (interface{}, error)
 	ExecuteDmf(*gorm.DB, *dmf.DMF) (interface{}, error)
 	GetType() string
+	GetChartType() string
 	UpdateKv(dmf *dmf.DMF) error
 	GetChartBase() *ChartBase
 }

@@ -33,3 +33,7 @@ func (t *PieDiagram) Execute(db *gorm.DB) (interface{}, error) {
 func (t *PieDiagram) GetType() string {
 	return DatatablePieDiagram
 }
+
+func (t *PieDiagram) GetChartType() string {
+	return t.ChartType
+}
