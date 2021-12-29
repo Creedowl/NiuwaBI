@@ -27,7 +27,7 @@ func InitApp() *gin.Engine {
 	api.Use(authMiddleware.MiddlewareFunc())
 	{
 		api.POST("/test", utils.AutoWrap(handlers.Test))
-
+		api.POST("/get_user_info", utils.AutoWrap(handlers.GetUserStatisticsInfo))
 		workspace := api.Group("/workspace")
 		{
 			workspace.POST("/get", utils.AutoWrap(handlers.GetWorkspace))

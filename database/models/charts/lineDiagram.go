@@ -2,6 +2,7 @@ package charts
 
 import (
 	"errors"
+	"fmt"
 	"github.com/Creedowl/NiuwaBI/dmf"
 	"gorm.io/gorm"
 )
@@ -14,6 +15,7 @@ type LineDiagram struct {
 	YDataType    string    `json:"yDataType"`
 	Datatype     []string  `json:"datatype"`
 	YExtraOption []yOption `json:"yExtraOption"`
+	Trigger      string    `json:"trigger"`
 }
 
 func (t *LineDiagram) ExecuteDmf(db *gorm.DB, dmf *dmf.DMF) (interface{}, error) {
@@ -21,7 +23,28 @@ func (t *LineDiagram) ExecuteDmf(db *gorm.DB, dmf *dmf.DMF) (interface{}, error)
 }
 
 func (t *LineDiagram) UpdateKv(dmf *dmf.DMF) error {
-	panic("implement me")
+	t.Kv = nil
+	for _, field := range t.Fields {
+		dimension := dmf.GetDimensionByName(field)
+		if dimension != nil {
+			t.Kv = append(t.Kv, Kv{
+				Key:   field,
+				Label: dimension.GetLabel(),
+			})
+			continue
+		}
+
+		metric := dmf.GetMetricByName(field)
+		if metric != nil {
+			t.Kv = append(t.Kv, Kv{
+				Key:   field,
+				Label: metric.GetLabel(),
+			})
+			continue
+		}
+		return fmt.Errorf("field %s not found in dimensions and metrics", field)
+	}
+	return nil
 }
 
 func (t *LineDiagram) GetChartBase() *ChartBase {
@@ -50,9 +73,12 @@ func (t *LineDiagram) Execute(db *gorm.DB) (interface{}, error) {
 		kvCache[kv.Key] = kv.Label
 	}
 	keyIndex := make(map[string]int)
+	for i, s := range t.Y {
+		keyIndex[s] = i
+	}
 	xName := t.X
 	first := true
-	var yName []string
+	yName := make([]string, len(keyIndex))
 	if v, ok := kvCache[xName]; ok {
 		xName = v
 	}
@@ -65,11 +91,12 @@ func (t *LineDiagram) Execute(db *gorm.DB) (interface{}, error) {
 			}
 			if _, exist := keys[k]; exist {
 				if first {
-					keyIndex[k] = index
 					if vv, ok := kvCache[k]; ok {
-						yName = append(yName, vv)
+						yName[keyIndex[k]] = vv
+						//yName = append(yName, vv)
 					} else {
-						yName = append(yName, k)
+						yName[keyIndex[k]] = k
+						//yName = append(yName, k)
 					}
 				}
 				index++
@@ -83,9 +110,13 @@ func (t *LineDiagram) Execute(db *gorm.DB) (interface{}, error) {
 	}
 
 	var echartsJsonData = map[string]interface{}{}
-	echartsJsonData["title"] = CompileTitle(t.Name)
-	echartsJsonData["tooltip"] = CompileTooltips(true)
-	echartsJsonData["toolbox"] = CompileFeatures(true)
+	if t.SubName != "" {
+		echartsJsonData["title"] = CompileTitle(t.Name, &t.SubName, "left")
+	} else {
+		echartsJsonData["title"] = CompileTitle(t.Name, nil, "left")
+	}
+	echartsJsonData["tooltip"] = CompileTooltips(t.Trigger)
+	echartsJsonData["toolbox"] = CompileFeatures(true, true)
 	echartsJsonData["legend"] = CompileLegends(t.Kv, t.Y)
 	//X-axis
 	echartsJsonData["xAxis"] = CompileDataX(xName, t.XAxisType, xData)

@@ -76,6 +76,15 @@ func GetAllWorkspaces(pagination *Pagination, user *User) (*PaginationResp, erro
 	}, nil
 }
 
+func GetWorkspaceByOwner(id uint) ([]Workspace, error) {
+	var workspaces []Workspace
+	err := database.GetDB().Where("owner = ?", id).Find(&workspaces).Error
+	if err != nil {
+		return nil, err
+	}
+	return workspaces, nil
+}
+
 func GetWorkspaceByID(id uint) (*Workspace, error) {
 	var workspace Workspace
 	err := database.GetDB().First(&workspace, id).Error

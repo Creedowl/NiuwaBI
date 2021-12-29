@@ -16,6 +16,14 @@ type User struct {
 	Permissions uint   `json:"permissions"`
 }
 
+type WorkspaceInfo struct {
+	WorkspaceName string   `json:"workspaceName"`
+	ReportName    []string `json:"reportName"`
+}
+type UserStatistics struct {
+	WorkspaceInfo []WorkspaceInfo `json:"workspaceInfo"`
+}
+
 const (
 	Admin = 1
 )

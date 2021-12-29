@@ -35,6 +35,7 @@ type ChartBase struct {
 	ChartType string       `json:"chart_type"`
 	Sql       string       `json:"sql"`
 	Name      string       `json:"name"`
+	SubName   string       `json:"subName"`
 	Pos       Pos          `json:"pos"`
 	Kv        []Kv         `json:"kv"`
 	Fields    []string     `json:"fields"`

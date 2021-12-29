@@ -19,6 +19,7 @@ type GetAllReportsParam struct {
 }
 
 func GetAllReports(_ *gin.Context, param GetAllReportsParam) (*models.PaginationResp, error) {
+	models.GetWorkspaceByOwner(1)
 	return models.GetAllReports(&param.Pagination, param.WorkspaceID)
 }
 
