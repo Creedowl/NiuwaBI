@@ -50,10 +50,14 @@ func (w *Workspace) Update() (*Workspace, error) {
 	return w.Save()
 }
 
-func GetAllWorkspaces(pagination *Pagination) (*PaginationResp, error) {
+func GetAllWorkspaces(pagination *Pagination, user *User) (*PaginationResp, error) {
 	var workspaces []Workspace
 	var count int64
+
 	db := database.GetDB().Model(&Workspace{})
+	if !user.IsAdmin() {
+		db = db.Where("owner = ?", user.ID)
+	}
 	pagination.Apply(db).Find(&workspaces)
 	err := db.Error
 	if err != nil {

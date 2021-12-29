@@ -15,8 +15,9 @@ func CreateWorkspace(_ *gin.Context, workspace models.Workspace) (*models.Worksp
 	return workspace.Save()
 }
 
-func GetAllWorkspaces(_ *gin.Context, pagination models.Pagination) (*models.PaginationResp, error) {
-	return models.GetAllWorkspaces(&pagination)
+func GetAllWorkspaces(c *gin.Context, pagination models.Pagination) (*models.PaginationResp, error) {
+	user := GetCurrentUser(c)
+	return models.GetAllWorkspaces(&pagination, user)
 }
 
 func GetWorkspace(_ *gin.Context, param WorkspaceIDParam) (*models.Workspace, error) {

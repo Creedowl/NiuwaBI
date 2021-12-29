@@ -44,6 +44,7 @@ func InitApp() *gin.Engine {
 			report.POST("/get_all", utils.AutoWrap(handlers.GetAllReports))
 			report.POST("/create", utils.AutoWrap(handlers.CreateReport))
 			report.POST("/update", utils.AutoWrap(handlers.UpdateReport))
+			report.POST("/remove", utils.AutoWrap(handlers.RemoveReport))
 			report.POST("/execute", utils.AutoWrap(handlers.ExecuteReport))
 		}
 	}

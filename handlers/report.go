@@ -30,6 +30,10 @@ func UpdateReport(_ *gin.Context, report models.Report) (*models.Report, error) 
 	return report.Update()
 }
 
+func RemoveReport(_ *gin.Context, param ReportIDParam) (*DumbResp, error) {
+	return &DumbResp{OK: true}, models.RemoveReport(param.ID)
+}
+
 func ExecuteReport(_ *gin.Context, param ReportIDParam) (interface{}, error) {
 	report, err := models.GetReportByID(param.ID)
 	if err != nil {
