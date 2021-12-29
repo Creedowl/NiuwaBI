@@ -224,3 +224,7 @@ func GetReportByID(id uint) (*Report, error) {
 	}
 	return &report, nil
 }
+
+func RemoveReport(id uint) error {
+	return database.GetDB().Delete(&Report{}, id).Error
+}
