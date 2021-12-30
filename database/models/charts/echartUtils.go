@@ -22,7 +22,9 @@ type Grid struct {
 type void struct{}
 
 type EchartsTitle struct {
-	Text string `json:"text"`
+	Text    string  `json:"text"`
+	Subtext *string `json:"subtext"`
+	Left    string  `json:"left"`
 }
 
 func CompileGridStyle(left int, right int, bottom int, containLabel bool) Grid {
@@ -40,6 +42,35 @@ func CompileSequentialData(name []string, datatype []string, data [][]interface{
 		results = append(results, CompileData(name[i], datatype[i], data[i], options[i].Smooth))
 	}
 	return results
+}
+
+func CompileOneRowPieData(m map[string]interface{}, cache map[string]string) interface{} {
+	var data []map[string]interface{}
+	for k, v := range m {
+		temp := map[string]interface{}{}
+		temp["value"] = v
+		if name, exist := cache[k]; exist {
+			temp["name"] = name
+		} else {
+			temp["name"] = k
+		}
+	}
+	return data
+}
+
+func CompileTwoColumnsPieData(m []map[string]interface{}, name string, value string) interface{} {
+	var data []map[string]interface{}
+	for _, s := range m {
+		if len(s) != 2 {
+			return nil
+		}
+		//s[0] -> name , s[1] -> value
+		temp := map[string]interface{}{}
+		temp["name"] = s[name]
+		temp["value"] = s[value]
+		data = append(data, temp)
+	}
+	return data
 }
 
 func CompileData(name string, datatype string, data []interface{}, smooth bool) ChartDataY {
@@ -74,25 +105,26 @@ func CompileYAxis(yDataType string) (m map[string]interface{}) {
 	return
 }
 
-func CompileTitle(title string) EchartsTitle {
-	return EchartsTitle{Text: title}
+func CompileTitle(title string, subtext *string, left string) EchartsTitle {
+	return EchartsTitle{Text: title, Subtext: subtext, Left: left}
 }
 
-func CompileFeatures(saveImage bool) (m map[string]interface{}) {
+func CompileFeatures(saveImage bool, restore bool) (m map[string]interface{}) {
 	m = map[string]interface{}{}
 	featureMap := make(map[string]interface{})
 	if saveImage {
 		featureMap["saveAsImage"] = void{}
 	}
+	if restore {
+		featureMap["restore"] = void{}
+	}
 	m["feature"] = featureMap
 	return
 }
 
-func CompileTooltips(isAxis bool) (m map[string]interface{}) {
+func CompileTooltips(trigger string) (m map[string]interface{}) {
 	m = map[string]interface{}{}
-	if isAxis {
-		m["trigger"] = "axis"
-	}
+	m["trigger"] = trigger
 	return
 }
 
@@ -113,5 +145,22 @@ func CompileLegends(kv []Kv, fields []string) (m map[string]interface{}) {
 		}
 	}
 	m["data"] = data
+	return
+}
+
+func CompilePieEmphasis() (m map[string]interface{}) {
+	m = map[string]interface{}{}
+	style := map[string]interface{}{}
+	style["shadowBlur"] = 10
+	style["shadowOffsetX"] = 0
+	style["shadowColor"] = "rgba(0, 0, 0, 0.5)"
+	m["itemStyle"] = style
+	return
+}
+
+func CompileLeftLegends() (m map[string]interface{}) {
+	m = map[string]interface{}{}
+	m["orient"] = "vertical"
+	m["left"] = "left"
 	return
 }
