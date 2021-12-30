@@ -17,7 +17,11 @@ type PieDiagram struct {
 }
 
 func (t *PieDiagram) ExecuteDmf(db *gorm.DB, dmf *dmf.DMF) (interface{}, error) {
-	return dmf.Execute(db, t.Fields, t.Filters)
+	results, err := dmf.Execute(db, t.Fields, t.Filters)
+	if err != nil {
+		return nil, err
+	}
+	return t.genEchartsJsonData(results.([]map[string]interface{}))
 }
 
 func (t *PieDiagram) UpdateKv(dmf *dmf.DMF) error {
@@ -55,6 +59,10 @@ func (t *PieDiagram) Execute(db *gorm.DB) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	return t.genEchartsJsonData(results)
+}
+
+func (t *PieDiagram) genEchartsJsonData(results []map[string]interface{}) (interface{}, error) {
 	kvCache := map[string]string{}
 	for _, kv := range t.Kv {
 		kvCache[kv.Key] = kv.Label
