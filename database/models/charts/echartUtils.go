@@ -61,9 +61,6 @@ func CompileOneRowPieData(m map[string]interface{}, cache map[string]string) int
 func CompileTwoColumnsPieData(m []map[string]interface{}, name string, value string) interface{} {
 	var data []map[string]interface{}
 	for _, s := range m {
-		if len(s) != 2 {
-			return nil
-		}
 		//s[0] -> name , s[1] -> value
 		temp := map[string]interface{}{}
 		temp["name"] = s[name]
