@@ -19,7 +19,11 @@ type LineDiagram struct {
 }
 
 func (t *LineDiagram) ExecuteDmf(db *gorm.DB, dmf *dmf.DMF) (interface{}, error) {
-	return dmf.Execute(db, t.Fields, t.Filters)
+	results, err := dmf.Execute(db, t.Fields, t.Filters)
+	if err != nil {
+		return nil, err
+	}
+	return t.genEchartsJsonData(results.([]map[string]interface{}))
 }
 
 func (t *LineDiagram) UpdateKv(dmf *dmf.DMF) error {
@@ -61,6 +65,10 @@ func (t *LineDiagram) Execute(db *gorm.DB) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	return t.genEchartsJsonData(results)
+}
+
+func (t *LineDiagram) genEchartsJsonData(results []map[string]interface{}) (interface{}, error) {
 	//Generate echarts json option
 	keys := make(map[string]bool)
 	for _, key := range t.Y {
